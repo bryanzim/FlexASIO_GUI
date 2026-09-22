@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
-using Commons.Media.PortAudio;
+using PortAudioSharp;
 using System.Diagnostics;
 using System.IO;
 using System.Globalization;
@@ -19,17 +18,14 @@ namespace FlexASIOGUI
         private bool InitDone = false;
         private string TOMLPath;
         private FlexGUIConfig flexGUIConfig;
-        private Encoding legacyEncoding;
-        private readonly string flexasioGuiVersion = "0.35";
+        private readonly string flexasioGuiVersion = "0.40";
         private readonly string flexasioVersion = "1.9";
         private readonly string tomlName = "FlexASIO.toml";
         private readonly string docUrl = "https://github.com/dechamps/FlexASIO/blob/master/CONFIGURATION.md";
-        TomlModelOptions tomlModelOptions = new();
+        readonly TomlSerializerOptions tomlSerializerOptions = new();
 
         [DllImport(@"C:\Program Files\FlexASIO\x64\FlexASIO.dll")]
         public static extern int Initialize(string PathName, bool TestMode);
-        [DllImport(@"kernel32.dll")]
-        public static extern uint GetACP();
 
         public Form1()
         {
@@ -39,24 +35,26 @@ namespace FlexASIOGUI
 
             System.Globalization.CultureInfo customCulture = (System.Globalization.CultureInfo)System.Threading.Thread.CurrentThread.CurrentCulture.Clone();
             customCulture.NumberFormat.NumberDecimalSeparator = ".";
-            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-
-            // get the value of the "Language for non-Unicode programs" setting (1252 for English)
-            // note: in Win11 this could be UTF-8 already, since it's natively supported
-            legacyEncoding = Encoding.GetEncoding((int)GetACP());
 
             System.Threading.Thread.CurrentThread.CurrentCulture = customCulture;
             CultureInfo.DefaultThreadCurrentCulture = customCulture;
             CultureInfo.DefaultThreadCurrentUICulture = customCulture;
 
+            PortAudio.Initialize();
+
             TOMLPath = $"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}\\{tomlName}";
-            
-            tomlModelOptions.ConvertPropertyName = (string name) => name;
+
             this.LoadFlexASIOConfig(TOMLPath);
 
             InitDone = true;
-            SetStatusMessage($"FlexASIO GUI for FlexASIO {flexasioVersion} started ({Configuration.VersionString})");
+            SetStatusMessage($"FlexASIO GUI for FlexASIO {flexasioVersion} started ({PortAudio.VersionInfo.versionText})");
             GenerateOutput();
+        }
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            PortAudio.Terminate();
+            base.OnFormClosed(e);
         }
 
         private FlexGUIConfig LoadFlexASIOConfig(string tomlPath)
@@ -65,7 +63,7 @@ namespace FlexASIOGUI
             if (File.Exists(tomlPath))
             {
                 var tomlPathAsText = File.ReadAllText(tomlPath);
-                flexGUIConfig = Toml.ToModel<FlexGUIConfig>(tomlPathAsText, options: tomlModelOptions);
+                flexGUIConfig = TomlSerializer.Deserialize<FlexGUIConfig>(tomlPathAsText, tomlSerializerOptions) ?? new FlexGUIConfig();
             }
 
             numericBufferSize.Maximum = 8192;
@@ -74,9 +72,9 @@ namespace FlexASIOGUI
             numericLatencyInput.Increment = 0.1m;
             numericLatencyOutput.Increment = 0.1m;
 
-            for (var i = 0; i < Configuration.HostApiCount; i++)
+            for (var i = 0; i < PortAudioHostApi.Count; i++)
             {
-                comboBackend.Items.Add(Configuration.GetHostApiInfo(i).name);
+                comboBackend.Items.Add(PortAudioHostApi.GetName(i));
             }
 
             if (comboBackend.Items.Contains(flexGUIConfig.backend))
@@ -121,39 +119,29 @@ namespace FlexASIOGUI
             return flexGUIConfig;
         }
 
-        private string DescrambleUTF8(string s)
-        {
-            // portaudio incorrectly returns UTF-8 strings as if they were ANSI (CP1252 for most Latin systems, CP1251 for Cyrillic, etc...)
-            // this line fixes the issue by reading the input as CP* and parsing it as UTF-8
-            var bytes = legacyEncoding.GetBytes(s);
-            return Encoding.UTF8.GetString(bytes);
-        }
-
         private TreeNode[] GetDevicesForBackend(string Backend, bool Input)
         {
             List<TreeNode> treeNodes = new List<TreeNode>();
             treeNodes.Add(new TreeNode("(None)"));
-            for (var i = 0; i < Configuration.DeviceCount; i++)
+            for (var i = 0; i < PortAudio.DeviceCount; i++)
             {
-                var deviceInfo = Configuration.GetDeviceInfo(i);
+                var deviceInfo = PortAudio.GetDeviceInfo(i);
 
-                var apiInfo = Configuration.GetHostApiInfo(deviceInfo.hostApi);
-                
-                if (apiInfo.name != Backend) 
+                if (PortAudioHostApi.GetName(deviceInfo.hostApi) != Backend)
                     continue;
 
                 if (Input == true)
                 {
                     if (deviceInfo.maxInputChannels > 0)
                     {
-                        treeNodes.Add(new TreeNode(DescrambleUTF8(deviceInfo.name)));
+                        treeNodes.Add(new TreeNode(deviceInfo.name));
                     }
                 }
                 else
                 {
                     if (deviceInfo.maxOutputChannels > 0)
                     {
-                        treeNodes.Add(new TreeNode(DescrambleUTF8(deviceInfo.name)));
+                        treeNodes.Add(new TreeNode(deviceInfo.name));
                     }
                 }
             }
@@ -227,7 +215,7 @@ namespace FlexASIOGUI
             }
 
             configOutput.Clear();
-            configOutput.Text = Toml.FromModel(flexGUIConfig, options: tomlModelOptions);
+            configOutput.Text = TomlSerializer.Serialize(flexGUIConfig, tomlSerializerOptions);
         }
 
 
