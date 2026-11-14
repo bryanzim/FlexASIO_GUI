@@ -30,7 +30,7 @@ namespace FlexASIOGUI
         public Form1()
         {
             InitializeComponent();
-            
+
             this.Text = $"FlexASIO GUI v{flexasioGuiVersion}";
 
             System.Globalization.CultureInfo customCulture = (System.Globalization.CultureInfo)System.Threading.Thread.CurrentThread.CurrentCulture.Clone();
@@ -150,7 +150,6 @@ namespace FlexASIOGUI
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            
         }
 
         private void comboBackend_SelectedIndexChanged(object sender, EventArgs e)
@@ -160,7 +159,8 @@ namespace FlexASIOGUI
             {
                 var selectedBackend = o.SelectedItem as string;
                 RefreshDevices(selectedBackend);
-                if (selectedBackend == "(None)") selectedBackend = "";
+                if (selectedBackend == "(None)")
+                    selectedBackend = "";
                 flexGUIConfig.backend = selectedBackend;
                 GenerateOutput();
             }
@@ -198,11 +198,15 @@ namespace FlexASIOGUI
 
         private void GenerateOutput()
         {
-            if (!InitDone) return;
+            if (!InitDone)
+                return;
 
-            if (!checkBoxSetBufferSize.Checked) flexGUIConfig.bufferSizeSamples = null;
-            if (!checkBoxSetInputLatency.Checked) flexGUIConfig.input.suggestedLatencySeconds = null;
-            if (!checkBoxSetOutputLatency.Checked) flexGUIConfig.output.suggestedLatencySeconds = null;
+            if (!checkBoxSetBufferSize.Checked)
+                flexGUIConfig.bufferSizeSamples = null;
+            if (!checkBoxSetInputLatency.Checked)
+                flexGUIConfig.input.suggestedLatencySeconds = null;
+            if (!checkBoxSetOutputLatency.Checked)
+                flexGUIConfig.output.suggestedLatencySeconds = null;
             if (!checkBoxWasapiInputSet.Checked)
             {
                 flexGUIConfig.input.wasapiAutoConvert = null;
@@ -250,9 +254,10 @@ namespace FlexASIOGUI
             SetStatusMessage($"Configuration written to {saveFileDialog.FileName}");
         }
 
-         private void treeDevicesInput_AfterSelect(object sender, TreeViewEventArgs e)
+        private void treeDevicesInput_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            if (sender == null) return;
+            if (sender == null)
+                return;
             else
             {
                 e.Node.Checked = true;
@@ -262,7 +267,8 @@ namespace FlexASIOGUI
 
         private void treeDevicesOutput_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            if (sender == null) return;
+            if (sender == null)
+                return;
             else
             {
                 e.Node.Checked = true;
@@ -272,7 +278,8 @@ namespace FlexASIOGUI
 
         private void treeDevicesOutput_AfterCheck(object sender, TreeViewEventArgs e)
         {
-            if (sender == null) return;
+            if (sender == null)
+                return;
             else
             {
                 this.onTreeViewSelected(eventArgs: e, forInput: false);
@@ -281,7 +288,8 @@ namespace FlexASIOGUI
 
         private void treeDevicesInput_AfterCheck(object sender, TreeViewEventArgs e)
         {
-            if (sender == null) return;
+            if (sender == null)
+                return;
             else
             {
                 this.onTreeViewSelected(eventArgs: e, forInput: true);
@@ -315,7 +323,8 @@ namespace FlexASIOGUI
         private void numericChannelsOutput_ValueChanged(object sender, EventArgs e)
         {
             var o = sender as NumericUpDown;
-            if (o == null) return;
+            if (o == null)
+                return;
             flexGUIConfig.output.channels = (o.Value > 0 ? (int?)o.Value : null);
             GenerateOutput();
         }
@@ -323,7 +332,8 @@ namespace FlexASIOGUI
         private void numericChannelsInput_ValueChanged(object sender, EventArgs e)
         {
             var o = sender as NumericUpDown;
-            if (o == null) return;
+            if (o == null)
+                return;
             flexGUIConfig.input.channels = (o.Value > 0 ? (int?)o.Value : null);
             GenerateOutput();
         }
@@ -331,7 +341,8 @@ namespace FlexASIOGUI
         private void numericLatencyOutput_ValueChanged(object sender, EventArgs e)
         {
             var o = sender as NumericUpDown;
-            if (o == null) return;
+            if (o == null)
+                return;
             if (checkBoxSetOutputLatency.Enabled)
             {
                 flexGUIConfig.output.suggestedLatencySeconds = (o.Value > 0 ? (double)o.Value : 0);
@@ -342,7 +353,8 @@ namespace FlexASIOGUI
         private void numericLatencyInput_ValueChanged(object sender, EventArgs e)
         {
             var o = sender as NumericUpDown;
-            if (o == null) return;
+            if (o == null)
+                return;
             if (checkBoxSetInputLatency.Enabled)
             {
                 flexGUIConfig.input.suggestedLatencySeconds = (o.Value > 0 ? (double)o.Value : 0);
@@ -353,7 +365,8 @@ namespace FlexASIOGUI
         private void wasapiAutoConvertOutput_CheckedChanged(object sender, EventArgs e)
         {
             var o = sender as CheckBox;
-            if (o == null) return;
+            if (o == null)
+                return;
             flexGUIConfig.output.wasapiAutoConvert = o.Checked;
             GenerateOutput();
         }
@@ -361,7 +374,8 @@ namespace FlexASIOGUI
         private void wasapiExclusiveOutput_CheckedChanged(object sender, EventArgs e)
         {
             var o = sender as CheckBox;
-            if (o == null) return;
+            if (o == null)
+                return;
             flexGUIConfig.output.wasapiExclusiveMode = o.Checked;
             GenerateOutput();
         }
@@ -369,7 +383,8 @@ namespace FlexASIOGUI
         private void wasapiAutoConvertInput_CheckedChanged(object sender, EventArgs e)
         {
             var o = sender as CheckBox;
-            if (o == null) return;
+            if (o == null)
+                return;
             flexGUIConfig.input.wasapiAutoConvert = o.Checked;
             GenerateOutput();
         }
@@ -377,7 +392,8 @@ namespace FlexASIOGUI
         private void wasapiExclusiveInput_CheckedChanged(object sender, EventArgs e)
         {
             var o = sender as CheckBox;
-            if (o == null) return;
+            if (o == null)
+                return;
             flexGUIConfig.input.wasapiExclusiveMode = o.Checked;
             GenerateOutput();
         }
@@ -385,16 +401,18 @@ namespace FlexASIOGUI
         private void numericBufferSize_ValueChanged(object sender, EventArgs e)
         {
             var o = sender as NumericUpDown;
-            if (o == null) return;
+            if (o == null)
+                return;
             flexGUIConfig.bufferSizeSamples = (o.Value > 0 ? (int)o.Value : 0);
             GenerateOutput();
         }
 
- 
+
         private void checkBoxSetInputLatency_CheckedChanged(object sender, EventArgs e)
         {
             var o = sender as CheckBox;
-            if (o == null) return;
+            if (o == null)
+                return;
             numericLatencyInput.Enabled = o.Checked;
             if (o.Checked == false)
             {
@@ -410,9 +428,11 @@ namespace FlexASIOGUI
         private void checkBoxSetOutputLatency_CheckedChanged(object sender, EventArgs e)
         {
             var o = sender as CheckBox;
-            if (o == null) return;
+            if (o == null)
+                return;
             numericLatencyOutput.Enabled = o.Checked;
-            if (o.Checked == false) {
+            if (o.Checked == false)
+            {
                 flexGUIConfig.output.suggestedLatencySeconds = null;
             }
             else
@@ -421,15 +441,17 @@ namespace FlexASIOGUI
             }
             GenerateOutput();
         }
-       
+
 
         private void checkBoxSetBufferSize_CheckedChanged(object sender, EventArgs e)
         {
             var o = sender as CheckBox;
-            if (o == null) return;
+            if (o == null)
+                return;
             numericBufferSize.Enabled = o.Checked;
-            if (o.Checked == false) { 
-                flexGUIConfig.bufferSizeSamples = null; 
+            if (o.Checked == false)
+            {
+                flexGUIConfig.bufferSizeSamples = null;
             }
             else
             {
@@ -441,7 +463,8 @@ namespace FlexASIOGUI
         private void checkBoxWasapiInputSet_CheckedChanged(object sender, EventArgs e)
         {
             var o = sender as CheckBox;
-            if (o == null) return;
+            if (o == null)
+                return;
             wasapiAutoConvertInput.Enabled = o.Checked;
             wasapiExclusiveInput.Enabled = o.Checked;
 
@@ -461,7 +484,8 @@ namespace FlexASIOGUI
         private void checkBoxWasapOutputSet_CheckedChanged(object sender, EventArgs e)
         {
             var o = sender as CheckBox;
-            if (o == null) return;
+            if (o == null)
+                return;
             wasapiAutoConvertOutput.Enabled = o.Checked;
             wasapiExclusiveOutput.Enabled = o.Checked;
 
@@ -492,7 +516,7 @@ namespace FlexASIOGUI
         private void btLoadFrom_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            
+
             openFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
             openFileDialog.FileName = tomlName;
             openFileDialog.Filter = "FlexASIO Config (*.toml)|*.toml";
@@ -510,7 +534,6 @@ namespace FlexASIOGUI
                     this.LoadFlexASIOConfig(TOMLPath);
                     return;
                 }
-                
             }
             SetStatusMessage($"Configuration loaded from {openFileDialog.FileName}");
         }

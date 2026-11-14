@@ -16,7 +16,6 @@ namespace FlexASIOGUI
             input = new FlexGUIConfigDeviceSection();
             output = new FlexGUIConfigDeviceSection();
         }
-
     }
     public class FlexGUIConfigDeviceSection
     {
